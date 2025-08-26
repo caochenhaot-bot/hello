@@ -1,7 +1,15 @@
 server:
   ip: localhost
   port: 9090
-
+  tomcat:
+    accesslog:
+      enabled: true
+      directory: ./logs
+      prefix: access
+      suffix: .log
+      pattern: "%h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\""
+      file-date-format: yyyy-MM-dd
+      rename-on-rotate: true
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -15,6 +23,7 @@ spring:
     multipart:
       max-file-size: 1500MB
       max-request-size: 1500MB
+
 mybatis:
   mapper-locations: classpath:mapper/*.xml  #扫描所有mybatis的xml文件
 #  configuration:
@@ -26,12 +35,12 @@ mybatis-plus:
 files:
   upload:
 
-    path: D:/Software-Cup/files/
+    path: D:/code/Software-Cup/files/
   pythonupload:
-    path: D:/Software-Cup/data/
+    path: D:/code/Software-Cup/data/
   pythondownload:
-    path: D:/Software-Cup/
+    path: D:/code/Software-Cup/
   Jsondownload:
-      path: D:/Software-Cup/json/
+    path: D:/code/Software-Cup/json/
   pythonDataTestupload:
     path: D:/Software-Cup/OnlinePredict/

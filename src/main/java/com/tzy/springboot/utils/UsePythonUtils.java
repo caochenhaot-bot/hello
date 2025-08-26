@@ -7,9 +7,9 @@ import java.io.InputStreamReader;
 
 public class UsePythonUtils {
 
-   private String pythonExe="D:\\Anaconda3\\python.exe";
-   private String pythonTraninMain="D:\\Software-Cup\\python\\train_model_online.py";
-   private String pythonPredictMain="D:\\Software-Cup\\python\\predict_online.py";
+   private String pythonExe="D:\\Users\\ss\\anaconda3\\python.exe";
+   private String pythonTraninMain="D:\\code\\Software-Cup\\python\\train_model_online.py";
+   private String pythonPredictMain="D:\\code\\Software-Cup\\python\\predict_online.py";
    private String pathOne;
    private String pathtwo;
    private String pathJsonUrl;
@@ -59,11 +59,11 @@ public class UsePythonUtils {
             String line = null;
             System.out.println("标准输出:");
             while ((line = stdoutReader.readLine()) != null) {
-                //System.out.println(line);
+                System.out.println(line);
             }
             System.out.println("标准错误输出:");
             while ((line = stderrReader.readLine()) != null) {
-               // System.err.println(line);
+                System.err.println(line);
             }
 //        java代码中的process.waitFor()返回值为0表示我们调用python脚本成功，
 //         返回值为1表示调用python脚本失败，这和我们通常意义上见到的0与1定义正好相反
