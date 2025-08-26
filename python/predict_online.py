@@ -20,13 +20,13 @@ data = fill_missing_values(data)
 data = scale_data(data)
 
 # 定义文件保存的目录路径
-output_directory = 'D:\\Software-Cup\\json' 
+output_directory = 'D:\\code\\Software-Cup\\json' 
 
 output_name = '{}.json'.format(predict_json_path)
 
 # 将文件名赋值给变量此变量是在线预测输出的json文件名
 output_predict_file_name = os.path.join(output_directory, output_name)
 
-predict(r'D:\Software-Cup\python\dnn_model_88.h5', data, output_predict_file_name,predict_file_path)
+predict(r'D:\code\Software-Cup\python\dnn_model_88.h5', data, output_predict_file_name,predict_file_path)
 
 
