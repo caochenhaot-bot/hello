@@ -32,15 +32,27 @@ mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
+base:
+  path: D:/code/Software-Cup
+  python: D:/Users/ss/anaconda3
+
 files:
   upload:
-
-    path: D:/code/Software-Cup/files/
-  pythonupload:
-    path: D:/code/Software-Cup/data/
-  pythondownload:
-    path: D:/code/Software-Cup/
-  Jsondownload:
-    path: D:/code/Software-Cup/json/
-  pythonDataTestupload:
-    path: D:/Software-Cup/OnlinePredict/
+    path: ${base.path}/files/
+  pythonUpload:
+    path: ${base.path}/data/
+  pythonDownload:
+    path: ${base.path}/
+  #预测结果
+  JsonDownload:
+    path: ${base.path}/json/
+  #预测数据
+  pythonDataTestUpload:
+    path: ${base.path}/OnlinePredict/
+  #python调用路径
+  pythonExe:
+    path: ${base.python}/python.exe
+  pythonTrainMain:
+    path: ${base.path}/python/train_model_online.py
+  pythonPredictMain:
+    path: ${base.path}/python/predict_online.py

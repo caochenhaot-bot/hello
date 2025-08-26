@@ -68,7 +68,7 @@ def predict(model_path, X, output_path,predict_file_path):
         # Commit the changes
     conn.commit()
     # 将预测结果转换为字典
-    url='http://localhost:9090/DataTest/'+predict_file_path[30:]
+    url='http://localhost:9090/DataTest/'+predict_file_path[35:]
     print(url)
     result = {}
     for i, pred in enumerate(y_pred):

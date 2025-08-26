@@ -12,6 +12,7 @@ import com.tzy.springboot.mapper.FileMapper;
 import com.tzy.springboot.common.Constants;
 import com.tzy.springboot.common.Result;
 import com.tzy.springboot.service.IUserService;
+import com.tzy.springboot.utils.PropertyUtil;
 import com.tzy.springboot.utils.TokenUtils;
 import com.tzy.springboot.utils.UsePythonUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,10 +44,8 @@ import static com.tzy.springboot.utils.TokenUtils.getCurrentUser;
 @Transactional
 public class pythonController implements Runnable {
 
-    @Value("${files.pythonupload.path}")
-    private String fileUploadPath;
-    @Value("${files.pythondownload.path}")
-    private String fileDownloadPath;
+    @Autowired
+    private PropertyUtil propertyUtil;
 
     @Value("${server.ip}")
     private String serverIp;
@@ -79,7 +78,7 @@ public class pythonController implements Runnable {
         System.out.println(uuid);
         String fileUUID = uuid + StrUtil.DOT + type;
         System.out.println(fileUUID);
-        File uploadFile = new File(fileUploadPath + fileUUID);
+        File uploadFile = new File(propertyUtil.getPythonUpload() + fileUUID);
         // 判断配置的文件目录是否存在，若不存在则创建一个新的文件目录
         File parentFile = uploadFile.getParentFile();
         if(!parentFile.exists()) {
@@ -121,15 +120,15 @@ public class pythonController implements Runnable {
         if (!ObjectUtils.isEmpty(files.getPythonurl())){
             return Result.error("505","已完成，请下载");
         }
-        File uploadFile = new File(fileUploadPath + url);
-        UsePythonUtils usePythonUtils = new UsePythonUtils();
-        usePythonUtils.setPathOne(uploadFile.toString());
-        System.out.println(uploadFile.toString());
+        File uploadFile = new File(propertyUtil.getPythonUpload() + url);
+        System.out.println("uploadFile:" + uploadFile);
         String pythonurl = url.replace("csv", "h5");
-        System.out.println(pythonurl);
-        usePythonUtils.setReslut(pythonurl);
+        System.out.println("pythonurl:" +pythonurl);
         try {
-            int i = usePythonUtils.UsePythontrain();
+
+            int i = UsePythonUtils.callPython(new String[] {
+                    propertyUtil.getPythonExe(),propertyUtil.getPythonTrainMain(),
+                    uploadFile.toString(),pythonurl});
             System.out.println(i);
             if (i==1){
                 return Result.error("507","训练失败");
@@ -160,7 +159,7 @@ public class pythonController implements Runnable {
     public void download(@PathVariable String pythonUrl, HttpServletResponse response) throws IOException {
         System.out.println(pythonUrl);
         // 根据文件的唯一标识码获取文件
-        File uploadFile = new File(fileDownloadPath+pythonUrl);
+        File uploadFile = new File(propertyUtil.getPythonDownload() + pythonUrl);
         // 设置输出流的格式
         ServletOutputStream os = response.getOutputStream();
         response.addHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(pythonUrl, "UTF-8"));

@@ -10,18 +10,14 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.tzy.springboot.common.Constants;
 import com.tzy.springboot.common.Result;
-import com.tzy.springboot.entity.Files;
 import com.tzy.springboot.entity.OnlineDate;
 import com.tzy.springboot.entity.TestFiles;
-import com.tzy.springboot.entity.User;
 import com.tzy.springboot.mapper.ResultMapper;
 import com.tzy.springboot.mapper.TestFileMapper;
+import com.tzy.springboot.utils.PropertyUtil;
 import com.tzy.springboot.utils.UsePythonUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -44,17 +40,9 @@ import static com.tzy.springboot.utils.TokenUtils.getCurrentUser;
 @RequestMapping("/DataTest")
 @Transactional
 public class TestFileController {
-    @Value("${files.pythonDataTestupload.path}")
-    private String pythonDataTestupload;
 
-    @Value("${server.ip}")
-    private String serverIp;
-
-    @Value("${files.Jsondownload.path}")
-    private String Jsondownload;
-
-   // @Value("${files.pythonupload.path}")
-    //private String fileUploadPath;
+    @Autowired
+    private PropertyUtil propertyUtil;
 
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
@@ -78,7 +66,7 @@ public class TestFileController {
         System.out.println(uuid);
         String fileUUID = uuid + StrUtil.DOT + type;
         System.out.println(fileUUID);
-        File uploadFile = new File(pythonDataTestupload + fileUUID);
+        File uploadFile = new File(propertyUtil.getPythonDataTestUpload() + fileUUID);
         // 判断配置的文件目录是否存在，若不存在则创建一个新的文件目录
         File parentFile = uploadFile.getParentFile();
         if(!parentFile.exists()) {
@@ -89,7 +77,7 @@ public class TestFileController {
         String md5 = SecureUtil.md5(file.getInputStream());
         // 上传文件到磁盘
         file.transferTo(uploadFile);
-        url = "http://" + serverIp + ":9090/DataTest/" + fileUUID;
+        url = "http://" + propertyUtil.getServerIp() + ":9090/DataTest/" + fileUUID;
         //获取当前用户的user_id
         String userId = stringRedisTemplate.opsForValue().get("userId");
 
@@ -121,15 +109,15 @@ public class TestFileController {
 
             return Result.error("505","已完成，请查看结果");
         }
-        File uploadFile = new File(pythonDataTestupload + url);
-        UsePythonUtils usePythonUtils = new UsePythonUtils();
-        usePythonUtils.setPathtwo(uploadFile.toString());
+        File uploadFile = new File(propertyUtil.getPythonDataTestUpload() + url);
         String jsonUrl = UUID.randomUUID().toString();
         System.out.println(jsonUrl);
-        usePythonUtils.setPathJsonUrl(jsonUrl);
         System.out.println(uploadFile.toString());
         try{
-            int i = usePythonUtils.usePythonPredict();
+
+            int i = UsePythonUtils.callPython(new String[] {
+                    propertyUtil.getPythonExe(),propertyUtil.getPythonPredictMain(),
+                    uploadFile.toString(),jsonUrl});
             System.out.println(i);
             if (i==1){
                 return Result.error("507","预测失败");
@@ -259,7 +247,7 @@ public class TestFileController {
     public void download(@PathVariable String jsonUrl, HttpServletResponse response) throws IOException {
         System.out.println(jsonUrl);
         // 根据文件的唯一标识码获取文件
-        File uploadFile = new File(Jsondownload+jsonUrl);
+        File uploadFile = new File(propertyUtil.getJsonDownload() + jsonUrl);
         // 设置输出流的格式
         ServletOutputStream os = response.getOutputStream();
         response.addHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(jsonUrl, "UTF-8"));
