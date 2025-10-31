@@ -33,8 +33,8 @@ mybatis-plus:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
 base:
-  path: D:/code/Software-Cup
-  python: D:/Users/ss/anaconda3
+  path: D:/code/Software-Cup/Software-Cup
+  python: C:/Users/31717/AppData/Local/Programs/Python/Python312
 
 files:
   upload:

@@ -17,3 +17,4 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface ResultMapper extends BaseMapper<OnlineDate> {
 }
+

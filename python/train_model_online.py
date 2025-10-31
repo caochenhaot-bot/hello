@@ -59,11 +59,11 @@ def train_model_online(X_train, y_train, X_val = None, y_val = None):
 
     if X_val is  None or y_val is  None:
         X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2)
-        
+
     # 计算类别权重
     class_weights = compute_class_weight(class_weight='balanced',classes= np.unique(y_train),y= y_train)
     class_weights = dict(enumerate(class_weights))
-    
+
     # 构建模型
     model = Sequential()
     model.add(Dense(94, activation='tanh', input_shape=(X_train.shape[1],), kernel_regularizer=l1(0.01)))
@@ -71,7 +71,7 @@ def train_model_online(X_train, y_train, X_val = None, y_val = None):
     model.add(Dense(252, activation='tanh',kernel_regularizer=l2(0.01)))
     model.add(Dense(42, activation='tanh',kernel_regularizer=l2(0.01)))
     model.add(Dense(6, activation='softmax'))
-    
+
     # 编译模型
     model.compile(loss='categorical_crossentropy', optimizer='Adamax', metrics=['accuracy'])
 
@@ -81,7 +81,7 @@ def train_model_online(X_train, y_train, X_val = None, y_val = None):
 
     # 训练模型
     history = model.fit(X_train,y_train, epochs= 54, batch_size= 632,class_weight=class_weights, validation_data=(X_val, y_val))
-    
+
     # 在验证集上评估模型性能并输出分类报告
     y_pred = model.predict(X_val)
     y_pred = y_pred.argmax(axis=1)
