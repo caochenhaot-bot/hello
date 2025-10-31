@@ -3,13 +3,10 @@ package com.tzy.springboot.controller;
 import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.tzy.springboot.entity.Files;
-import com.tzy.springboot.entity.OnlineDate;
 import com.tzy.springboot.common.Result;
+import com.tzy.springboot.entity.OnlineDate;
 import com.tzy.springboot.mapper.ResultMapper;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.*;
@@ -17,85 +14,110 @@ import java.util.*;
 @RestController
 @RequestMapping("/echarts")
 public class EchartsController {
-
+    @GetMapping("/ping")
+    public String ping() {
+        System.out.println("== /echarts/ping hit ==");
+        return "ok";
+    }
 
     @Resource
     private ResultMapper resultMapper;
 
-
+    /**
+     * 统一接口：无参=全局统计；带 testfileId=按文件统计
+     * 三类：0-正常，1-原发性，2-继发性
+     */
     @GetMapping("/members")
-    public Result members() {
-        ArrayList<Long> integers = new ArrayList<>();
-        for (int i = 0; i < 6; i++) {
-            LambdaQueryWrapper<OnlineDate> dateLambdaQueryWrapper = new LambdaQueryWrapper<>();
-            dateLambdaQueryWrapper.eq(OnlineDate::getResult, i);
-            Long aLong = resultMapper.selectCount(dateLambdaQueryWrapper);
-            integers.add(aLong);
+    public Result members(@RequestParam(value = "testfileId", required = false) Integer testfileId) {
+        List<Long> counts = new ArrayList<>();
+        if (testfileId == null) {
+            // 全局统计
+            for (int i = 0; i < 3; i++) {
+                counts.add(resultMapper.selectCount(
+                        new LambdaQueryWrapper<OnlineDate>().eq(OnlineDate::getResult, i)
+                ));
+            }
+        } else {
+            // 按文件统计（直接使用列名，兼容实体字段名）
+            counts = countByTestfileId(testfileId);
         }
-        return Result.success(integers);
+        return Result.success(counts);
     }
+
+
+    /** 兼容：查询参数版 */
+    @GetMapping("/membersByFile")
+    public Result membersByFileQuery(@RequestParam Integer testfileId) {
+        return Result.success(countByTestfileId(testfileId));
+    }
+
+    /** 兼容：路径参数版 */
+    @GetMapping("/members/{testfileId}")
+    public Result membersByFilePath(@PathVariable Integer testfileId) {
+        return Result.success(countByTestfileId(testfileId));
+    }
+
+    /** 只保留三类的分组明细（可视化辅助接口） */
     @GetMapping("/index")
     public Result index() {
-        Map<Integer,List> map = new HashMap<>();
-        for (int i = 0; i < 6; i++) {
-            LambdaQueryWrapper<OnlineDate> dateLambdaQueryWrapper = new LambdaQueryWrapper<>();
-            dateLambdaQueryWrapper.eq(OnlineDate::getResult, i);
-            List<OnlineDate> dates = resultMapper.selectList(dateLambdaQueryWrapper);
-            map.put(i,dates);
+        Map<Integer, List<OnlineDate>> map = new HashMap<>();
+        for (int i = 0; i < 3; i++) {
+            map.put(i, resultMapper.selectList(
+                    new LambdaQueryWrapper<OnlineDate>().eq(OnlineDate::getResult, i)
+            ));
         }
         return Result.success(map);
     }
+
+    /** 累计预测样本数 */
     @GetMapping("/totle")
     public Result totle() {
-        LambdaQueryWrapper<OnlineDate> dateLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        Long aLong = resultMapper.selectCount(dateLambdaQueryWrapper);
-        return Result.success(aLong);
+        Long total = resultMapper.selectCount(new LambdaQueryWrapper<>());
+        return Result.success(total);
     }
 
+    /** 今日预测样本数 */
     @GetMapping("/totle1")
     public Result totle1() {
-        List<OnlineDate> onlineDates = resultMapper.selectList(new QueryWrapper<OnlineDate>());
+        List<OnlineDate> list = resultMapper.selectList(new QueryWrapper<>());
         String today = DateUtil.today();
-        Integer totle=0;
-        for (OnlineDate onlineDate : onlineDates) {
-            Date createTime = onlineDate.getCreateTime();
-            String format = DateUtil.format(createTime, "yyyy-MM-dd");
-            if (format.equals(today)){
-                totle++;
+        int n = 0;
+        for (OnlineDate d : list) {
+            if (d.getCreateTime() != null) {
+                String day = DateUtil.format(d.getCreateTime(), "yyyy-MM-dd");
+                if (today.equals(day)) n++;
             }
         }
-        return Result.success(totle);
+        return Result.success(n);
     }
+
+    /** 最常见高血压类型（返回 0/1/2） */
     @GetMapping("/totle3")
     public Result totle3() {
-        Long max=0l;
-        Map<Integer,Long> map = new HashMap<>();
-        for (int i = 0; i < 6; i++) {
-            LambdaQueryWrapper<OnlineDate> dateLambdaQueryWrapper = new LambdaQueryWrapper<>();
-            dateLambdaQueryWrapper.eq(OnlineDate::getResult, i);
-            Long aLong = resultMapper.selectCount(dateLambdaQueryWrapper);
-            map.put(i,aLong);
-        }
         Integer maxKey = null;
-        for (Integer key : map.keySet()) {
-            if (maxKey == null || map.get(key) > map.get(maxKey)) {
-                maxKey = key;
+        long maxVal = -1;
+        for (int i = 0; i < 3; i++) {
+            long cnt = resultMapper.selectCount(
+                    new LambdaQueryWrapper<OnlineDate>().eq(OnlineDate::getResult, i)
+            );
+            if (cnt > maxVal) {
+                maxVal = cnt;
+                maxKey = i;
             }
         }
-        System.out.println(maxKey);
         return Result.success(maxKey);
     }
-//    @GetMapping("/Max")
-//    public Result Max() {
-//        List<Long> integers = new ArrayList<>();
-//        for (int i = 0; i < 6; i++) {
-//            LambdaQueryWrapper<OnlineDate> dateLambdaQueryWrapper = new LambdaQueryWrapper<>();
-//            dateLambdaQueryWrapper.eq(OnlineDate::getResult, i);
-//            Long aLong = resultMapper.selectCount(dateLambdaQueryWrapper);
-//            integers.add(aLong);
-//        }
-//        Integer max = Collections.max(integers).intValue();
-//
-//        return Result.success(max+300);
-//    }
+
+    /* ---------- 内部方法 ---------- */
+
+    /** 统计指定 testfileId 的三类数量 */
+    private List<Long> countByTestfileId(Integer testfileId) {
+        List<Long> counts = new ArrayList<>();
+        for (int i = 0; i < 3; i++) {
+            QueryWrapper<OnlineDate> w = new QueryWrapper<>();
+            w.eq("result", i).eq("testfile_id", testfileId);
+            counts.add(resultMapper.selectCount(w));
+        }
+        return counts;
+    }
 }

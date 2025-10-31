@@ -1,197 +1,131 @@
 <template>
-    <div>
-        <el-row :gutter="10" style="margin-bottom: 60px">
-            <el-col :span="6">
-                <el-card style="color: #409EFF">
-                    <div><i class="el-icon-user-solid"/> 故障总数</div>
-                    <div style="padding: 10px 0; text-align: center; font-weight: bold" v-text="totle">
-                    </div>
-                  <div style="padding: 10px 0; text-align: right; font-weight: bold"> <el-button type="text" @click="show()">详情明细</el-button></div>
+  <div style="color:#666;font-size:14px;">
+    <!-- 顶部统计卡片 -->
+    <el-row :gutter="10" style="margin-bottom:12px">
+      <el-col :span="8">
+        <el-card>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <i class="el-icon-collection" />
+              累计预测样本数
+            </div>
+            <el-link type="primary" :underline="false">详情明细</el-link>
+          </div>
+          <div style="padding:16px 0;text-align:center;font-weight:bold;font-size:22px">
+            {{ total }}
+          </div>
+        </el-card>
+      </el-col>
+    </el-row>
 
-                </el-card>
-            </el-col>
-        </el-row>
-        <el-row>
-            <el-col :span="12">
-                <div id="main" style="width: 500px; height: 400px"></div>
-            </el-col>
+    <el-row :gutter="20">
+      <el-col :span="12">
+        <el-card shadow="hover">
+          <div slot="header" class="clearfix">
+            <span>高血压类型分布（柱状图）</span>
+          </div>
+          <div id="bp-bar" style="width:100%;height:420px;"></div>
+        </el-card>
+      </el-col>
 
-            <el-col :span="12">
-                <div id="pie" style="width: 500px; height: 400px"></div>
-            </el-col>
-        </el-row>
-
-    </div>
+      <el-col :span="12">
+        <el-card shadow="hover">
+          <div slot="header" class="clearfix">
+            <span>高血压分类占比（饼图）</span>
+          </div>
+          <div id="bp-pie" style="width:100%;height:420px;"></div>
+        </el-card>
+      </el-col>
+    </el-row>
+  </div>
 </template>
 
 <script>
-    import * as echarts from 'echarts';
-    export default {
-        name: "Dashbord",
-        data() {
-            return {
-                totle:0,
-                id:this.$route.query.id
-            }
-        },
-        mounted() {  // 页面元素渲染之后再触发
-            var chartDom = document.getElementById('main');
-            var myChart = echarts.init(chartDom);
-            var option;
-            option = {
-                tooltip: {
-                    trigger: 'axis',
-                    axisPointer: {
-                        type: 'shadow'
-                    }
-                },
-                grid: {
-                    left: '3%',
-                    right: '4%',
-                    bottom: '3%',
-                    containLabel: true
-                },
-                xAxis: [
-                    {
-                        type: 'category',
-                        data: ['故障0', '故障1', '故障2', '故障3', '故障4', '故障5'],
-                        axisTick: {
-                            alignWithLabel: true
-                        }
-                    }
-                ],
-                yAxis: [
-                    {
-                        type: 'value'
-                    }
-                ],
-                series: [
-                    {
-                        name: '故障数量',
-                        type: 'bar',
-                        barWidth: '60%',
-                        data: [],
-                        itemStyle: {
-                        normal: {
-                          color(params) {
-                            const colorList = ['#5470C6', '#91CC75', '#FAC858', '#EE6666','#73C0DE','#3BA272'];
-                            return colorList[params.dataIndex];
-                          }
-                        }
-                      }
-                    }
-                ],
-                toolbox: {
-                    show: true,
-                    left: 'center',
-                    feature: {
-                        mark: {show: true},
-                        saveAsImage: {
-                            show: true,
-                            title : '下载图片',
-                        },
-                    }
-                },
-            };
-            myChart.setOption(option);
-            // 饼图
-            var chartDomPie = document.getElementById('pie');
-            var myPieChart = echarts.init(chartDomPie);
-            var optionPie;
-            optionPie = {
-                title: {
-                    text: '故障分类占比',
-                    subtext: '比列图',
-                    left: 'center'
-                },
-                tooltip: {
-                    trigger: 'item'
-                },
-                legend: {
-                    orient: 'vertical',
-                    left: 'left'
-                },
-                series: [
-                    {
-                        type: 'pie',
-                        radius: '50%',
-                        data: [],
-                        emphasis: {
-                            itemStyle: {
-                                shadowBlur: 10,
-                                shadowOffsetX: 0,
-                                shadowColor: 'rgba(0, 0, 0, 0.5)'
-                            }
-                        }
-                    }
-                ],
-                toolbox: {
-                    show: true,
-                    left: 'right',
-                    feature: {
-                        mark: {show: true},
-                        saveAsImage: {
-                            show: true,
-                            title : '下载',
-                        },
-                    }
-                },
-            };
-            if (typeof(this.id) == "undefined"){
-              this.request.get("/echarts/members").then(res => {
-                // 填空
-                option.series[0].data = res.data
-                // 数据准备完毕之后再set
-                myChart.setOption(option);
-                optionPie.series[0].data = [
-                  {name: "故障0", value: res.data[0]},
-                  {name: "故障1", value: res.data[1]},
-                  {name: "故障2", value: res.data[2]},
-                  {name: "故障3", value: res.data[3]},
-                  {name: "故障4", value: res.data[4]},
-                  {name: "故障5", value: res.data[5]},
-                ]
-                myPieChart.setOption(optionPie)
-              }),
-                  this.request.get("/echarts/totle").then(res => {
-                    this.totle=res.data
-                  })
-            }else {
-              this.request.get("/DataTest/members/"+this.id).then(res => {
-                // 填空
-                option.series[0].data = res.data
-                // 数据准备完毕之后再set
-                myChart.setOption(option);
-                optionPie.series[0].data = [
-                  {name: "故障0", value: res.data[0]},
-                  {name: "故障1", value: res.data[1]},
-                  {name: "故障2", value: res.data[2]},
-                  {name: "故障3", value: res.data[3]},
-                  {name: "故障4", value: res.data[4]},
-                  {name: "故障5", value: res.data[5]},
-                ]
-                myPieChart.setOption(optionPie)
-              }),
-                  this.request.get("/DataTest/totle/"+this.id).then(res => {
-                    this.totle=res.data
-                  })
-            }
+import * as echarts from 'echarts'
 
-
-        },
-        methods: {
-          show(){
-            this.$router.push({
-              path: "/Detilebord",
-              query: {
-                id1: this.id
-              }
-            });
-          }
-        }
+export default {
+  name: 'Dashbord',
+  data () {
+    return {
+      total: 0,
+      labels: ['正常', '原发性', '继发性'], // 固定三类
+      counts: [0, 0, 0],
+      charts: { bar: null, pie: null }
     }
+  },
+  created () {
+    // 统计总数
+    this.request.get('/echarts/totle').then(res => {
+      this.total = Number(res.data) || 0
+    })
+  },
+  mounted () {
+    this.initCharts()
+    this.loadMembers()
+    window.addEventListener('resize', this.onResize)
+  },
+  beforeDestroy () {
+    window.removeEventListener('resize', this.onResize)
+    if (this.charts.bar) this.charts.bar.dispose()
+    if (this.charts.pie) this.charts.pie.dispose()
+  },
+  methods: {
+    onResize () {
+      if (this.charts.bar) this.charts.bar.resize()
+      if (this.charts.pie) this.charts.pie.resize()
+    },
+    initCharts () {
+      this.charts.bar = echarts.init(document.getElementById('bp-bar'))
+      this.charts.pie = echarts.init(document.getElementById('bp-pie'))
+    },
+    loadMembers () {
+      // 全局三类计数
+      this.request.get('/echarts/members').then(res => {
+        const arr = Array.isArray(res.data) ? res.data : []
+        this.counts = [0, 0, 0].map((_, i) => Number(arr[i]) || 0)
+        this.renderBar()
+        this.renderPie()
+      })
+    },
+    renderBar () {
+      const option = {
+        tooltip: { trigger: 'axis' },
+        grid: { left: 40, right: 20, top: 30, bottom: 30 },
+        xAxis: { type: 'category', data: this.labels },
+        yAxis: { type: 'value' },
+        series: [{
+          type: 'bar',
+          data: this.counts,
+          barWidth: '40%'
+        }]
+      }
+      this.charts.bar.setOption(option, true)
+    },
+    renderPie () {
+      const option = {
+        tooltip: { trigger: 'item' },
+        legend: { orient: 'vertical', left: 'left', data: this.labels },
+        series: [{
+          name: '占比',
+          type: 'pie',
+          radius: '65%',
+          center: ['50%', '55%'],
+          data: this.labels.map((n, i) => ({ name: n, value: this.counts[i] })),
+          emphasis: {
+            itemStyle: {
+              shadowBlur: 10,
+              shadowOffsetX: 0,
+              shadowColor: 'rgba(0, 0, 0, 0.3)'
+            }
+          }
+        }]
+      }
+      this.charts.pie.setOption(option, true)
+    }
+  }
+}
 </script>
 
 <style scoped>
-
+/* 可按需追加样式 */
 </style>

@@ -174,7 +174,7 @@ public class TestFileController {
     @DeleteMapping("/{id}")
     public Result delete(@PathVariable Integer id) {
         LambdaQueryWrapper<OnlineDate> onlineDateLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        onlineDateLambdaQueryWrapper.eq(OnlineDate::getTestfileid,id);
+        onlineDateLambdaQueryWrapper.eq(OnlineDate::getTestfileId,id);
         resultMapper.delete(onlineDateLambdaQueryWrapper);
         testFileMapper.deleteById(id);
         flushRedis(Constants.FILES_KEY);
@@ -227,7 +227,7 @@ public class TestFileController {
         ArrayList<Long> integers = new ArrayList<>();
         for (int i = 0; i < 6; i++) {
             LambdaQueryWrapper<OnlineDate> dateLambdaQueryWrapper = new LambdaQueryWrapper<>();
-            dateLambdaQueryWrapper.eq(OnlineDate::getTestfileid,id);
+            dateLambdaQueryWrapper.eq(OnlineDate::getTestfileId,id);
             dateLambdaQueryWrapper.eq(OnlineDate::getResult, i);
             Long aLong = resultMapper.selectCount(dateLambdaQueryWrapper);
             integers.add(aLong);
@@ -238,7 +238,7 @@ public class TestFileController {
     @GetMapping("/totle/{id}")
     public Result totle(@PathVariable Integer id) {
         LambdaQueryWrapper<OnlineDate> dateLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        dateLambdaQueryWrapper.eq(OnlineDate::getTestfileid,id);
+        dateLambdaQueryWrapper.eq(OnlineDate::getTestfileId,id);
         Long aLong = resultMapper.selectCount(dateLambdaQueryWrapper);
         return Result.success(aLong);
     }
