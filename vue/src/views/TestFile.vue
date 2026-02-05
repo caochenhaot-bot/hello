@@ -59,15 +59,22 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="下载">
+      <!-- ▼▼ 修改后的下载列：下拉菜单（原始文件/预测结果CSV/JSON） ▼▼ -->
+      <el-table-column label="下载/导出">
         <template slot-scope="scope">
-          <el-button
-              type="primary"
-              @click="download(scope.row.jsonUrl)"
-              :disabled="scope.row.jsonUrl == null"
-          >下载</el-button>
+          <el-dropdown @command="cmd => handleDownload(scope.row, cmd)">
+            <el-button type="primary">
+              下载 <i class="el-icon-arrow-down el-icon--right"></i>
+            </el-button>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item command="raw" :disabled="!scope.row.jsonUrl">原始文件</el-dropdown-item>
+              <el-dropdown-item command="csv">预测结果 CSV</el-dropdown-item>
+              <el-dropdown-item command="json">预测结果 JSON</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
         </template>
       </el-table-column>
+      <!-- ▲▲ 修改后的下载列 ▲▲ -->
 
       <el-table-column label="操作" width="200" align="center">
         <template slot-scope="scope">
@@ -121,16 +128,18 @@ export default {
   },
   methods: {
     load() {
-      this.request.get("/DataTest/page", {
-        params: {
-          pageNum: this.pageNum,
-          pageSize: this.pageSize,
-          name: this.name,
-        },
-      }).then((res) => {
-        this.tableData = res.data.records;
-        this.total = res.data.total;
-      });
+      this.request
+          .get("/DataTest/page", {
+            params: {
+              pageNum: this.pageNum,
+              pageSize: this.pageSize,
+              name: this.name,
+            },
+          })
+          .then((res) => {
+            this.tableData = res.data.records;
+            this.total = res.data.total;
+          });
     },
 
     changeEnable(row) {
@@ -192,14 +201,15 @@ export default {
       this.load();
     },
 
-    // 这里改为跳到 /home，并带上 id
+    // 查看结果：跳到 /home，并带上 id
     show(id) {
       this.$router.push({
         path: "/home",
-        query: { id }
+        query: { id },
       });
     },
 
+    // 在线预测
     star(url) {
       url = url.slice(31);
       this.$message("在线预测中");
@@ -217,10 +227,51 @@ export default {
       });
     },
 
+    // 原始文件下载（保留旧逻辑）
     download(jsonUrl) {
-      jsonUrl = "http://localhost:9090/DataTest/" + jsonUrl;
-      window.open(jsonUrl);
+      const url = "http://localhost:9090/DataTest/" + jsonUrl;
+      window.open(url);
       this.$router.push("/TestFile");
+    },
+
+    // 新增：统一处理下载（原始/导出）
+    handleDownload(row, cmd) {
+      // cmd: 'raw' | 'csv' | 'json'
+      if (cmd === "raw") {
+        if (!row.jsonUrl) {
+          this.$message.warning("暂无原始文件可下载");
+          return;
+        }
+        this.download(row.jsonUrl);
+        return;
+      }
+
+      const fmt = cmd; // 'csv' | 'json'
+      this.request
+          .get("/export/predict", {
+            params: { testfileId: row.id, fmt },
+            responseType: "blob",
+          })
+          .then((res) => {
+            const blob = new Blob([res], {
+              type:
+                  fmt === "json"
+                      ? "application/json;charset=UTF-8"
+                      : "text/csv;charset=UTF-8",
+            });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `predict_${row.id}.${fmt}`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            this.$message.success("导出成功");
+          })
+          .catch(() => {
+            this.$message.error("导出失败");
+          });
     },
   },
 };

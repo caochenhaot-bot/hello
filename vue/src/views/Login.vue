@@ -2,7 +2,7 @@
   <div class="wrapper">
     <div
         style="margin: 200px auto; background-color: #fff; width: 350px; height: 280px; padding: 20px; border-radius: 10px">
-      <div style="margin: 20px 0; text-align: center; font-size: 24px"><b>基于机器学习的分布式系统故障诊断系统</b></div>
+      <div style="margin: 20px 0; text-align: center; font-size: 24px"><b>基于深度学习的高血压类型诊断系统</b></div>
       <el-form :model="user" :rules="rules" ref="userForm">
         <el-form-item prop="username">
           <el-input size="medium" prefix-icon="el-icon-user" v-model="user.username" placeholder="用户名"></el-input>

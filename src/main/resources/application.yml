@@ -53,6 +53,6 @@ files:
   pythonExe:
     path: ${base.python}/python.exe
   pythonTrainMain:
-    path: ${base.path}/python/train_model_online.py
+    path: ${base.path}/python/train_hypertension_model.py
   pythonPredictMain:
     path: ${base.path}/python/predict_online.py

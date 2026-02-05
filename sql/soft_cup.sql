@@ -68,7 +68,7 @@ INSERT INTO `sys_menu` VALUES (10, '主页', '/home', 'el-icon-house', NULL, NUL
 INSERT INTO `sys_menu` VALUES (41, '采集日志', '/DataTest', 'el-icon-s-marketing', '在线测试模型数据', 48, 'DataTest', 9);
 INSERT INTO `sys_menu` VALUES (45, '上传训练集', '/onlineupdate', 'el-icon-document', NULL, 46, 'onlineupdate', 6);
 INSERT INTO `sys_menu` VALUES (46, '模型训练', NULL, 'el-icon-s-grid', NULL, NULL, NULL, 5);
-INSERT INTO `sys_menu` VALUES (48, '故障预测', '', 'el-icon-s-marketing', NULL, NULL, 'onlineDate', 12);
+INSERT INTO `sys_menu` VALUES (48, '高血压类型预测', '', 'el-icon-s-marketing', NULL, NULL, 'onlineDate', 12);
 INSERT INTO `sys_menu` VALUES (49, '详细报表', '/Detilebord', 'el-icon-s-marketing', '11', 48, 'Detilebord', 13);
 INSERT INTO `sys_menu` VALUES (50, '运维报修', NULL, 'el-icon-s-grid', NULL, NULL, NULL, 14);
 INSERT INTO `sys_menu` VALUES (51, '故障报修', '/Send', 'el-icon-document', NULL, 50, 'Send', 15);
